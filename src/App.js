@@ -102,7 +102,6 @@ export default function PlayingCardDesigner() {
     
     for (let i = 0; i < deck.length; i += cardsPerPage) {
       const pageCards = deck.slice(i, i + cardsPerPage);
-      const pageNum = Math.floor(i / cardsPerPage);
       
       const totalWidth = cols * cardWidth;
       const totalHeight = rows * cardHeight;
@@ -120,7 +119,7 @@ export default function PlayingCardDesigner() {
         const x = offsetX + col * cardWidth;
         const y = offsetY + row * cardHeight;
         
-        svgContent += `
+        const cardContent = `
   <g transform="translate(${x}, ${y})">
     <rect width="${cardWidth}" height="${cardHeight}" fill="white" stroke="black" stroke-width="1" rx="2"/>
     ${showCutLines ? `<rect width="${cardWidth}" height="${cardHeight}" fill="none" stroke="#cccccc" stroke-width="0.2" stroke-dasharray="2,2"/>` : ''}
@@ -177,6 +176,7 @@ export default function PlayingCardDesigner() {
     `}
   </g>
 `;
+        svgContent += cardContent;
       });
       
       svgContent += `</svg>\n\n`;
