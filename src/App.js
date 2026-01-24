@@ -427,7 +427,7 @@ export default function PlayingCardDesigner() {
           ))
         )}
         <style>{`@media print { body { margin: 0; } @page { margin: 25.4mm; size: ${paperSize} ${paperSize === 'A4' ? 'landscape' : 'portrait'}; } }`}</style>
-      </>
+      </> 
     );
   }
 
