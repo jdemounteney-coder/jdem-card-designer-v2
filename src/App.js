@@ -22,6 +22,7 @@ export default function PlayingCardDesigner() {
   });
   const [showCutLines, setShowCutLines] = useState(true);
   const [printMode, setPrintMode] = useState('screen');
+  const [printView, setPrintView] = useState(null);
   const [step, setStep] = useState('suits');
   const [showBacks, setShowBacks] = useState(false);
 
@@ -265,9 +266,9 @@ export default function PlayingCardDesigner() {
   };
 
   const CornerSymbol = ({ value, suit, rotated }) => (
-    <div className={`flex flex-col items-center ${rotated ? 'transform rotate-180' : ''}`}>
-      <img src={numbers[value]} alt={value} className="w-6 h-6 object-contain mb-1" />
-      <img src={suits[suit]} alt={suit} className="w-4 h-4 object-contain" />
+    <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', transform: rotated ? 'rotate(180deg)' : 'none'}}>
+      <img src={numbers[value]} alt={value} style={{width: '24px', height: '24px', objectFit: 'contain', marginBottom: '4px'}} />
+      <img src={suits[suit]} alt={suit} style={{width: '16px', height: '16px', objectFit: 'contain'}} />
     </div>
   );
 
@@ -285,40 +286,39 @@ export default function PlayingCardDesigner() {
   );
 
   const CardFront = ({ card }) => (
-    <div className="relative bg-white border border-gray-400 rounded-lg overflow-hidden w-full h-full" style={{borderWidth: '1px'}}>
-      <div className="absolute top-2 left-2 z-10"><CornerSymbol value={card.value} suit={card.suit} /></div>
-      <div className="absolute bottom-2 right-2 z-10"><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
+    <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
+      <div style={{position: 'absolute', top: '8px', left: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} /></div>
+      <div style={{position: 'absolute', bottom: '8px', right: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
       {cornerStyle === 'four' && (
         <>
-          <div className="absolute top-2 right-2 z-10"><CornerSymbol value={card.value} suit={card.suit} /></div>
-          <div className="absolute bottom-2 left-2 z-10"><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
+          <div style={{position: 'absolute', top: '8px', right: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} /></div>
+          <div style={{position: 'absolute', bottom: '8px', left: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
         </>
       )}
       {cardStyle === 'picture' ? (
-        <div className="absolute inset-0 flex items-center justify-center" style={{padding: '5mm'}}>
+        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5mm'}}>
           <img 
             src={pictureCardImages[card.value]} 
             alt={`${card.value} of ${card.suit}`} 
-            className="w-full h-full object-cover rounded"
+            style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px'}}
           />
         </div>
       ) : card.type === 'number' ? (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-full h-full">
+        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+          <div style={{position: 'relative', width: '100%', height: '100%'}}>
             {getPipPositions(card.value).map((pos, idx) => (
-              <div key={idx} className="absolute" style={{left: `${pos[0]}%`, top: `${pos[1]}%`, transform: 'translate(-50%, -50%)'}}>
+              <div key={idx} style={{position: 'absolute', left: `${pos[0]}%`, top: `${pos[1]}%`, transform: 'translate(-50%, -50%)'}}>
                 <img src={suits[card.suit]} alt={card.suit}
-                  className={`object-contain ${pos[1] > 50 ? 'transform rotate-180' : ''}`}
-                  style={{width: card.value === 'A' ? '80px' : '30px', height: card.value === 'A' ? '80px' : '30px'}}
+                  style={{objectFit: 'contain', transform: pos[1] > 50 ? 'rotate(180deg)' : 'none', width: card.value === 'A' ? '80px' : '30px', height: card.value === 'A' ? '80px' : '30px'}}
                 />
               </div>
             ))}
           </div>
         </div>
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center p-6">
-          <div className="w-full h-full border-2 border-gray-400 rounded-md overflow-hidden bg-white">
-            <img src={faceCards[`${card.suit}-${card.value}`]} alt={`${card.value} of ${card.suit}`} className="w-full h-full object-contain" />
+        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px'}}>
+          <div style={{width: '100%', height: '100%', border: '2px solid #9ca3af', borderRadius: '6px', overflow: 'hidden', backgroundColor: 'white'}}>
+            <img src={faceCards[`${card.suit}-${card.value}`]} alt={`${card.value} of ${card.suit}`} style={{width: '100%', height: '100%', objectFit: 'contain'}} />
           </div>
         </div>
       )}
@@ -364,7 +364,7 @@ export default function PlayingCardDesigner() {
     for (let i = 0; i < cardsToPrint.length; i += cardsPerPage) pages.push(cardsToPrint.slice(i, i + cardsPerPage));
 
     return (
-      <>
+      <div className="print-content">
         {printMode === 'double-sided' ? (
           // Double-sided mode: fronts and backs on alternating pages
           pages.map((pageCards, pageIdx) => (
@@ -397,8 +397,8 @@ export default function PlayingCardDesigner() {
                     return flippedBacks.map((card, idx) => (
                       <div key={card?.id || `back-${idx}`} style={{width: '57mm', height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
                         {card && (
-                          <div className="relative bg-white border border-gray-400 rounded-lg overflow-hidden w-full h-full" style={{borderWidth: '1px'}}>
-                            <img src={cardBack} alt="Back" className="w-full h-full object-cover" />
+                          <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
+                            <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                           </div>
                         )}
                       </div>
@@ -416,8 +416,8 @@ export default function PlayingCardDesigner() {
                 {pageCards.map((card, idx) => (
                   <div key={card?.id || `empty-${idx}`} style={{width: '57mm', height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
                     {card && (printMode === 'fronts' ? <CardFront card={card} /> : 
-                      <div className="relative bg-white border border-gray-400 rounded-lg overflow-hidden w-full h-full" style={{borderWidth: '1px'}}>
-                        <img src={cardBack} alt="Back" className="w-full h-full object-cover" />
+                      <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
+                        <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                       </div>
                     )}
                   </div>
@@ -427,12 +427,12 @@ export default function PlayingCardDesigner() {
           ))
         )}
         <style>{`@media print { body { margin: 0; } @page { margin: 25.4mm; size: ${paperSize} ${paperSize === 'A4' ? 'landscape' : 'portrait'}; } }`}</style>
-      </> 
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8 print:hidden">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">JdeM's Playing Card Design Tool</h1>
