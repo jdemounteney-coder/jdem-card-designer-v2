@@ -387,7 +387,6 @@ export default function PlayingCardDesigner() {
     const cols = cardSize === 'bridge' ? 4 : 3;
     const rows = paperSize === 'A4' ? 2 : 4;
     const cardWidthMm = cardSize === 'bridge' ? '57mm' : '63.5mm';
-    const pageHeightMm = paperSize === 'A4' ? '297mm' : '420mm';
     const cardsPerPage = cols * rows;
     const pages = [];
     for (let i = 0; i < cardsToPrint.length; i += cardsPerPage) pages.push(cardsToPrint.slice(i, i + cardsPerPage));
@@ -395,63 +394,55 @@ export default function PlayingCardDesigner() {
     return (
       <div className="print-content">
         {printMode === 'double-sided' ? (
-          // Double-sided mode: fronts and backs on alternating pages
-          pages.map((pageCards, pageIdx) => (
-            <Fragment key={pageIdx}>
-              {/* Front page */}
-              <div className="print-page" style={{pageBreakAfter: 'always'}}>
-                <div style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: pageHeightMm}}>
-                  {pageCards.map((card, idx) => (
-                    <div key={card?.id || `empty-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
-                      {card && <CardFront card={card} />}
-                    </div>
-                  ))}
+          // Double-sided mode: fronts and backs on consecutive pages
+          pages.flatMap((pageCards, pageIdx) => [
+            // Front page
+            <div key={`front-${pageIdx}`} className="print-page" style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', pageBreakAfter: 'always', pageBreakInside: 'avoid'}}>
+              {pageCards.map((card, idx) => (
+                <div key={card?.id || `empty-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none', breakInside: 'avoid'}}>
+                  {card && <CardFront card={card} />}
                 </div>
-              </div>
-              {/* Back page - mirrored for proper alignment */}
-              <div className="print-page" style={{pageBreakAfter: pageIdx < pages.length - 1 ? 'always' : 'auto'}}>
-                <div style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: pageHeightMm}}>
-                  {(() => {
-                    const colsLocal = cols;
-                    const rowsLocal = rows;
-                    const flippedBacks = [];
-                    for (let row = 0; row < rowsLocal; row++) {
-                      for (let col = 0; col < colsLocal; col++) {
-                        const idx = row * colsLocal + col;
-                        if (idx < pageCards.length) {
-                          flippedBacks[row * colsLocal + (colsLocal - 1 - col)] = pageCards[idx];
-                        }
-                      }
+              ))}
+            </div>,
+            // Back page - mirrored for proper alignment
+            <div key={`back-${pageIdx}`} className="print-page" style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', pageBreakAfter: pageIdx < pages.length - 1 ? 'always' : 'auto', pageBreakInside: 'avoid'}}>
+              {(() => {
+                const colsLocal = cols;
+                const rowsLocal = rows;
+                const flippedBacks = [];
+                for (let row = 0; row < rowsLocal; row++) {
+                  for (let col = 0; col < colsLocal; col++) {
+                    const idx = row * colsLocal + col;
+                    if (idx < pageCards.length) {
+                      flippedBacks[row * colsLocal + (colsLocal - 1 - col)] = pageCards[idx];
                     }
-                    return flippedBacks.map((card, idx) => (
-                      <div key={card?.id || `back-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
-                        {card && (
-                          <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
-                            <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                          </div>
-                        )}
-                      </div>
-                    ));
-                  })()}
-                </div>
-              </div>
-            </Fragment>
-          ))
-        ) : (
-          // Single-sided mode
-          pages.map((pageCards, pageIdx) => (
-            <div key={pageIdx} className="print-page" style={{pageBreakAfter: pageIdx < pages.length - 1 ? 'always' : 'auto'}}>
-              <div style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: pageHeightMm, paddingTop: '10mm'}}>
-                {pageCards.map((card, idx) => (
-                    <div key={card?.id || `empty-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
-                    {card && (printMode === 'fronts' ? <CardFront card={card} /> : 
+                  }
+                }
+                return flippedBacks.map((card, idx) => (
+                  <div key={card?.id || `back-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none', breakInside: 'avoid'}}>
+                    {card && (
                       <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
                         <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
+                ));
+              })()}
+            </div>
+          ])
+        ) : (
+          // Single-sided mode
+          pages.map((pageCards, pageIdx) => (
+            <div key={pageIdx} className="print-page" style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', pageBreakAfter: pageIdx < pages.length - 1 ? 'always' : 'auto', pageBreakInside: 'avoid'}}>
+              {pageCards.map((card, idx) => (
+                <div key={card?.id || `empty-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none', breakInside: 'avoid'}}>
+                  {card && (printMode === 'fronts' ? <CardFront card={card} /> : 
+                    <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
+                      <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           ))
         )}
