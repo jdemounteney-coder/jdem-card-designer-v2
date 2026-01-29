@@ -178,6 +178,31 @@ export default function PlayingCardDesigner() {
   </g>
 `;
         svgContent += cardContent;
+        // Ensure corner symbols render above any full-bleed images by drawing an overlay
+        svgContent += `
+  <g transform="translate(${x}, ${y})">
+    <g>
+      <g transform="translate(2, 2)">
+        <image href="${numbers[card.value]}" width="7" height="7"/>
+        <image href="${suits[card.suit]}" x="0" y="7" width="7" height="7"/>
+      </g>
+      <g transform="translate(${cardWidth - 2}, ${cardHeight - 2}) rotate(180)">
+        <image href="${numbers[card.value]}" width="7" height="7"/>
+        <image href="${suits[card.suit]}" x="0" y="7" width="7" height="7"/>
+      </g>
+      ${cornerStyle === 'four' ? `
+      <g transform="translate(${cardWidth - 2}, 2) scale(-1, 1)">
+        <image href="${numbers[card.value]}" width="7" height="7"/>
+        <image href="${suits[card.suit]}" x="0" y="7" width="7" height="7"/>
+      </g>
+      <g transform="translate(2, ${cardHeight - 2}) rotate(180) scale(-1, 1)">
+        <image href="${numbers[card.value]}" width="7" height="7"/>
+        <image href="${suits[card.suit]}" x="0" y="7" width="7" height="7"/>
+      </g>
+      ` : ''}
+    </g>
+  </g>
+`;
       });
       
       svgContent += `</svg>\n\n`;
@@ -239,13 +264,13 @@ export default function PlayingCardDesigner() {
           <html>
           <head>
             <title>Print Cards - JdeM's Playing Card Design Tool</title>
-            <style>
-              body { margin: 0; padding: 0; }
-              @media print { 
-                body { margin: 0; } 
-                @page { margin: 25.4mm; size: ${paperSize} ${paperSize === 'A4' ? 'landscape' : 'portrait'}; } 
-              }
-            </style>
+                    <style>
+                      body { margin: 0; padding: 0; }
+                      @media print { 
+                        body { margin: 0; } 
+                        @page { margin: 10mm; size: ${paperSize} ${paperSize === 'A4' ? 'landscape' : 'portrait'}; } 
+                      }
+                    </style>
           </head>
           <body>
             ${printContent.innerHTML}
@@ -267,8 +292,8 @@ export default function PlayingCardDesigner() {
 
   const CornerSymbol = ({ value, suit, rotated }) => (
     <div style={{display: 'flex', flexDirection: 'column', alignItems: 'center', transform: rotated ? 'rotate(180deg)' : 'none'}}>
-      <img src={numbers[value]} alt={value} style={{width: '24px', height: '24px', objectFit: 'contain', marginBottom: '4px'}} />
-      <img src={suits[suit]} alt={suit} style={{width: '16px', height: '16px', objectFit: 'contain'}} />
+      <img src={numbers[value]} alt={value} style={{width: '24px', height: '24px', objectFit: 'contain', marginBottom: '4px', zIndex: 20}} />
+      <img src={suits[suit]} alt={suit} style={{height: '7mm', width: 'auto', objectFit: 'contain', zIndex: 20}} />
     </div>
   );
 
@@ -287,20 +312,20 @@ export default function PlayingCardDesigner() {
 
   const CardFront = ({ card }) => (
     <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
-      <div style={{position: 'absolute', top: '8px', left: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} /></div>
-      <div style={{position: 'absolute', bottom: '8px', right: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
+      <div style={{position: 'absolute', top: '8px', left: '8px', zIndex: 20}}><CornerSymbol value={card.value} suit={card.suit} /></div>
+      <div style={{position: 'absolute', bottom: '8px', right: '8px', zIndex: 20}}><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
       {cornerStyle === 'four' && (
         <>
-          <div style={{position: 'absolute', top: '8px', right: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} /></div>
-          <div style={{position: 'absolute', bottom: '8px', left: '8px', zIndex: 10}}><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
+          <div style={{position: 'absolute', top: '8px', right: '8px', zIndex: 20}}><CornerSymbol value={card.value} suit={card.suit} /></div>
+          <div style={{position: 'absolute', bottom: '8px', left: '8px', zIndex: 20}}><CornerSymbol value={card.value} suit={card.suit} rotated /></div>
         </>
       )}
       {cardStyle === 'picture' ? (
-        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '5mm'}}>
+        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0}}>
           <img 
             src={pictureCardImages[card.value]} 
             alt={`${card.value} of ${card.suit}`} 
-            style={{width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px'}}
+            style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 0, zIndex: 1}}
           />
         </div>
       ) : card.type === 'number' ? (
@@ -359,7 +384,11 @@ export default function PlayingCardDesigner() {
       cardsToPrint = getBacksForDoubleSided(deck);
     }
     
-    const cardsPerPage = paperSize === 'A4' ? 8 : 16;
+    const cols = cardSize === 'bridge' ? 4 : 3;
+    const rows = paperSize === 'A4' ? 2 : 4;
+    const cardWidthMm = cardSize === 'bridge' ? '57mm' : '63.5mm';
+    const pageHeightMm = paperSize === 'A4' ? '297mm' : '420mm';
+    const cardsPerPage = cols * rows;
     const pages = [];
     for (let i = 0; i < cardsToPrint.length; i += cardsPerPage) pages.push(cardsToPrint.slice(i, i + cardsPerPage));
 
@@ -371,9 +400,9 @@ export default function PlayingCardDesigner() {
             <Fragment key={pageIdx}>
               {/* Front page */}
               <div className="print-page" style={{pageBreakAfter: 'always'}}>
-                <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 57mm)', gridTemplateRows: `repeat(${paperSize === 'A4' ? 2 : 4}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: paperSize === 'A4' ? '297mm' : '420mm'}}>
+                <div style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: pageHeightMm}}>
                   {pageCards.map((card, idx) => (
-                    <div key={card?.id || `empty-${idx}`} style={{width: '57mm', height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
+                    <div key={card?.id || `empty-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
                       {card && <CardFront card={card} />}
                     </div>
                   ))}
@@ -381,21 +410,21 @@ export default function PlayingCardDesigner() {
               </div>
               {/* Back page - mirrored for proper alignment */}
               <div className="print-page" style={{pageBreakAfter: pageIdx < pages.length - 1 ? 'always' : 'auto'}}>
-                <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 57mm)', gridTemplateRows: `repeat(${paperSize === 'A4' ? 2 : 4}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: paperSize === 'A4' ? '297mm' : '420mm'}}>
+                <div style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: pageHeightMm}}>
                   {(() => {
-                    const cols = 4;
-                    const rows = paperSize === 'A4' ? 2 : 4;
+                    const colsLocal = cols;
+                    const rowsLocal = rows;
                     const flippedBacks = [];
-                    for (let row = 0; row < rows; row++) {
-                      for (let col = 0; col < cols; col++) {
-                        const idx = row * cols + col;
+                    for (let row = 0; row < rowsLocal; row++) {
+                      for (let col = 0; col < colsLocal; col++) {
+                        const idx = row * colsLocal + col;
                         if (idx < pageCards.length) {
-                          flippedBacks[row * cols + (cols - 1 - col)] = pageCards[idx];
+                          flippedBacks[row * colsLocal + (colsLocal - 1 - col)] = pageCards[idx];
                         }
                       }
                     }
                     return flippedBacks.map((card, idx) => (
-                      <div key={card?.id || `back-${idx}`} style={{width: '57mm', height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
+                      <div key={card?.id || `back-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
                         {card && (
                           <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
                             <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
@@ -412,9 +441,9 @@ export default function PlayingCardDesigner() {
           // Single-sided mode
           pages.map((pageCards, pageIdx) => (
             <div key={pageIdx} className="print-page" style={{pageBreakAfter: pageIdx < pages.length - 1 ? 'always' : 'auto'}}>
-              <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 57mm)', gridTemplateRows: `repeat(${paperSize === 'A4' ? 2 : 4}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: paperSize === 'A4' ? '297mm' : '420mm', paddingTop: '25.4mm'}}>
+              <div style={{display: 'grid', gridTemplateColumns: `repeat(${cols}, ${cardWidthMm})`, gridTemplateRows: `repeat(${rows}, 88.9mm)`, gap: 0, justifyContent: 'center', alignItems: 'center', minHeight: pageHeightMm, paddingTop: '10mm'}}>
                 {pageCards.map((card, idx) => (
-                  <div key={card?.id || `empty-${idx}`} style={{width: '57mm', height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
+                    <div key={card?.id || `empty-${idx}`} style={{width: cardWidthMm, height: '88.9mm', position: 'relative', border: showCutLines ? '0.5px dashed #ccc' : 'none'}}>
                     {card && (printMode === 'fronts' ? <CardFront card={card} /> : 
                       <div style={{position: 'relative', backgroundColor: 'white', border: '1px solid #9ca3af', borderRadius: '8px', overflow: 'hidden', width: '100%', height: '100%'}}>
                         <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
@@ -426,7 +455,7 @@ export default function PlayingCardDesigner() {
             </div>
           ))
         )}
-        <style>{`@media print { body { margin: 0; } @page { margin: 25.4mm; size: ${paperSize} ${paperSize === 'A4' ? 'landscape' : 'portrait'}; } }`}</style>
+        <style>{`@media print { body { margin: 0; } @page { margin: 10mm; size: ${paperSize} ${paperSize === 'A4' ? 'landscape' : 'portrait'}; } }`}</style>
       </div>
     );
   }
