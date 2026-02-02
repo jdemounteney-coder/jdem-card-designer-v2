@@ -385,7 +385,14 @@ export default function PlayingCardDesigner() {
     }
     
     const cols = cardSize === 'bridge' ? 4 : 3;
-    const rows = paperSize === 'A4' ? 2 : 4;
+    // Compute rows per page based on physical page height and margins to avoid half-cards when printer imposes extra unprintable margins (e.g., iPad)
+    const cardHeightMm = 88.9;
+    const pageHeightMm = paperSize === 'A4' ? 210 : 297; // A4 printed in landscape -> height 210mm, A3 portrait -> 297mm
+    const pageMarginMm = 10; // matches @page margin in print stylesheet
+    const safetyBufferMm = 4; // extra buffer to account for printer/device margins
+    const defaultRows = paperSize === 'A4' ? 2 : 4;
+    const maxRowsBySize = Math.max(1, Math.floor((pageHeightMm - pageMarginMm * 2 - safetyBufferMm) / cardHeightMm));
+    const rows = Math.min(defaultRows, maxRowsBySize);
     const cardWidthMm = cardSize === 'bridge' ? '57mm' : '63.5mm';
     const cardsPerPage = cols * rows;
     const pages = [];
