@@ -154,16 +154,17 @@ export default function SimpleCardDesigner() {
   // Shared grid style for both front and back print pages.
   // We rely solely on @page margins for positioning — no extra paddingTop here —
   // so fronts and backs sit at identical coordinates on their respective pages.
+  // Explicit width + height + overflow:hidden guarantees no card bleeds past the page edge.
   const printGridStyle = {
     display: 'grid',
     gridTemplateColumns: `repeat(${perRow}, ${cardW}mm)`,
-    gridTemplateRows: `repeat(${perPage / perRow}, ${cardH}mm)`,
+    gridTemplateRows: `repeat(${rowsPerPage}, ${cardH}mm)`,
     gap: 0,
-    // Left-align from the page margin rather than centering, so the
-    // horizontal offset is determined purely by the @page margin on both sides.
     justifyContent: 'start',
     alignContent: 'start',
-    width: 'fit-content',
+    width: `${perRow * cardW}mm`,
+    height: `${rowsPerPage * cardH}mm`,
+    overflow: 'hidden',
   };
 
   return (
@@ -279,11 +280,11 @@ export default function SimpleCardDesigner() {
                   <div>
                     <label className="block font-semibold mb-3">Card Size</label>
                     <div className="flex gap-4">
-                      {[['bridge', '57mm', '16/page'], ['poker', '63.5mm', '12/page']].map(([sz, dim, pg]) => (
+                      {[['bridge', '57mm'], ['poker', '63.5mm']].map(([sz, dim]) => (
                         <button key={sz} onClick={() => setCardSize(sz)} className={`flex-1 p-4 border-4 rounded-lg ${cardSize === sz ? 'border-purple-600 bg-purple-50' : 'border-gray-300'}`}>
                           <div className="font-bold capitalize">{sz}</div>
                           <div className="text-xs">{dim} × 88.9mm</div>
-                          <div className="text-xs opacity-75">{pg}</div>
+                          <div className="text-xs opacity-75">{perPage}/page</div>
                         </button>
                       ))}
                     </div>
@@ -350,7 +351,7 @@ export default function SimpleCardDesigner() {
                 {/* FRONT PAGE */}
                 <div style={{...printGridStyle, pageBreakAfter: 'always'}}>
                   {pg.map((c, i) => (
-                    <div key={i} style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative'}}>
+                    <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
                       <Card c={c} />
                       {showCutLines && <Marks />}
                     </div>
@@ -374,9 +375,9 @@ export default function SimpleCardDesigner() {
                       }
                     }
                     return flipped.map((c, i) => (
-                      <div key={i} style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative'}}>
+                      <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
                         {c && (
-                          <div style={{width: '100%', height: '100%', background: 'white', border: '1px solid #999', borderRadius: '3mm', overflow: 'hidden'}}>
+                          <div style={{width: '100%', height: '100%', background: 'white', border: '1px solid #999', borderRadius: '3mm', overflow: 'hidden', boxSizing: 'border-box'}}>
                             <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
                           </div>
                         )}
@@ -394,6 +395,11 @@ export default function SimpleCardDesigner() {
           @media print {
             body { margin: 0; }
             @page { margin: 25.4mm; size: A3 portrait; }
+            * { box-sizing: border-box !important; }
+            .print-card-cell {
+              overflow: hidden !important;
+              flex-shrink: 0 !important;
+            }
           }
         `}</style>
       </div>
