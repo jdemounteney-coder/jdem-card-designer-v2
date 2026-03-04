@@ -348,9 +348,9 @@ export default function SimpleCardDesigner() {
             const pgs = [];
             for (let i = 0; i < d.length; i += perPage) pgs.push(d.slice(i, i + perPage));
             return pgs.map((pg, pi) => (
-              <div key={pi}>
+              <div key={pi} style={{margin: 0, padding: 0}}>
                 {/* FRONT PAGE */}
-                <div style={{...printGridStyle, pageBreakAfter: 'always'}}>
+                <div style={{...printGridStyle, pageBreakBefore: 'always', pageBreakAfter: 'always', margin: 0, padding: 0}}>
                   {pg.map((c, i) => (
                     <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
                       <Card c={c} />
@@ -360,7 +360,7 @@ export default function SimpleCardDesigner() {
                 </div>
 
                 {/* BACK PAGE — columns mirrored so each back lines up with its front */}
-                <div style={{...printGridStyle, pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto'}}>
+                <div style={{...printGridStyle, pageBreakBefore: 'always', pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto', margin: 0, padding: 0}}>
                   {(() => {
                     // Build a fully-populated array of perPage slots (null = empty).
                     // For each card in the page, place it in the mirror-column position
@@ -394,9 +394,9 @@ export default function SimpleCardDesigner() {
 
         <style>{`
           @media print {
-            body { margin: 0; }
+            body { margin: 0; padding: 0; }
             @page { margin: 25.4mm; size: A3 portrait; }
-            * { box-sizing: border-box !important; }
+            * { box-sizing: border-box !important; margin: 0; padding: 0; }
             .print-card-cell {
               overflow: hidden !important;
               flex-shrink: 0 !important;
