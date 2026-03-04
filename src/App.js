@@ -350,7 +350,7 @@ export default function SimpleCardDesigner() {
             return pgs.map((pg, pi) => (
               <div key={pi} style={{margin: 0, padding: 0}}>
                 {/* FRONT PAGE */}
-                <div style={{...printGridStyle, pageBreakBefore: 'always', pageBreakAfter: 'always', margin: 0, padding: 0}}>
+                <div style={{...printGridStyle, pageBreakBefore: pi === 0 ? 'avoid' : 'always', pageBreakAfter: 'always', margin: 0, padding: 0}}>
                   {pg.map((c, i) => (
                     <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
                       <Card c={c} />
