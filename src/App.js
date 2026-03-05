@@ -156,6 +156,14 @@ export default function SimpleCardDesigner() {
   // We rely solely on @page margins for positioning — no extra paddingTop here —
   // so fronts and backs sit at identical coordinates on their respective pages.
   // Explicit width + height + overflow:hidden guarantees no card bleeds past the page edge.
+  // A3 printable width = 297mm - (2 * 25.4mm margins) = 246.2mm
+  // When flipping on long edge, the back page is mirrored left-to-right.
+  // So the back grid must be offset right by the unused page width,
+  // so that after flipping it aligns exactly with the front grid.
+  const printableW = 297 - 25.4 * 2; // 246.2mm
+  const gridW = perRow * cardW;
+  const backOffset = printableW - gridW; // bridge: 18.2mm, poker: 55.7mm
+
   const printGridStyle = {
     display: 'grid',
     gridTemplateColumns: `repeat(${perRow}, ${cardW}mm)`,
@@ -163,13 +171,19 @@ export default function SimpleCardDesigner() {
     gap: 0,
     justifyContent: 'start',
     alignContent: 'start',
-    width: `${perRow * cardW}mm`,
+    width: `${gridW}mm`,
     height: `${rowsPerPage * cardH}mm`,
     overflow: 'hidden',
   };
 
+  const backGridStyle = {
+    ...printGridStyle,
+    marginLeft: `${backOffset}mm`,
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8">
+    <>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8 print:hidden">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8 print:hidden">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">JdeM's Playing Card Design Tool</h1>
@@ -341,8 +355,11 @@ export default function SimpleCardDesigner() {
           )}
         </div>
 
-        {/* PRINT LAYOUT */}
-        <div className="hidden print:block">
+      </div>
+    </div>
+
+    {/* PRINT LAYOUT — outside all containers so no padding/margin affects positioning */}
+    <div className="hidden print:block">
           {(() => {
             const d = deck();
             const pgs = [];
@@ -360,7 +377,7 @@ export default function SimpleCardDesigner() {
                 </div>
 
                 {/* BACK PAGE — columns mirrored so each back lines up with its front */}
-                <div style={{...printGridStyle, pageBreakBefore: 'always', pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto', margin: 0, padding: 0}}>
+                <div style={{...backGridStyle, pageBreakBefore: 'always', pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto', padding: 0}}>
                   {(() => {
                     // Build a fully-populated array of perPage slots (null = empty).
                     // For each card in the page, place it in the mirror-column position
@@ -403,7 +420,6 @@ export default function SimpleCardDesigner() {
             }
           }
         `}</style>
-      </div>
-    </div>
+    </>
   );
 }
