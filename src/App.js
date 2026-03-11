@@ -162,7 +162,7 @@ export default function SimpleCardDesigner() {
   // so that after flipping it aligns exactly with the front grid.
   const printableW = 297 - 25.4 * 2; // 246.2mm
   const gridW = perRow * cardW;
-  const backOffset = printableW - gridW; // bridge: 17.2mm, poker: 54.7mm
+  const backOffset = printableW - gridW; // bridge: 18.2mm, poker: 55.7mm
 
   const printGridStyle = {
     display: 'grid',
@@ -174,6 +174,7 @@ export default function SimpleCardDesigner() {
     width: `${gridW}mm`,
     height: `${rowsPerPage * cardH}mm`,
     overflow: 'hidden',
+    marginTop: '10mm',
   };
 
   const backGridStyle = {
