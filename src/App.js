@@ -1,6 +1,3 @@
-Carddesigner fixed · JSX
-Copy
-
 import React, { useState } from 'react';
 import { Upload, Printer, Trash2, Check } from 'lucide-react';
  
@@ -381,7 +378,7 @@ export default function SimpleCardDesigner() {
                 </div>
  
                 {/* BACK PAGE — columns mirrored so each back lines up with its front */}
-                <div style={{...backGridStyle, pageBreakBefore: 'always', pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto', padding: 0}}>
+                <div style={{...backGridStyle, pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto', padding: 0}}>
                   {(() => {
                     // Build a fully-populated array of perPage slots (null = empty).
                     // For each card in the page, place it in the mirror-column position
