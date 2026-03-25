@@ -1,3 +1,6 @@
+Carddesigner fixed · JSX
+Copy
+
 import React, { useState } from 'react';
 import { Upload, Printer, Trash2, Check } from 'lucide-react';
  
@@ -174,12 +177,18 @@ export default function SimpleCardDesigner() {
     width: `${gridW}mm`,
     height: `${rowsPerPage * cardH}mm`,
     overflow: 'hidden',
-    marginTop: '10mm',
   };
  
   const backGridStyle = {
     ...printGridStyle,
     marginLeft: `${backOffset}mm`,
+  };
+ 
+  // Wrapper style for each page — paddingTop is more reliable than marginTop
+  // across page breaks, and applies identically to both front and back pages.
+  const pageWrapStyle = {
+    paddingTop: '10mm',
+    margin: 0,
   };
  
   return (
@@ -366,9 +375,10 @@ export default function SimpleCardDesigner() {
             const pgs = [];
             for (let i = 0; i < d.length; i += perPage) pgs.push(d.slice(i, i + perPage));
             return pgs.map((pg, pi) => (
-              <div key={pi} style={{padding: 0}}>
+              <div key={pi} style={{margin: 0, padding: 0}}>
                 {/* FRONT PAGE */}
-                <div style={{...printGridStyle, pageBreakBefore: pi === 0 ? 'avoid' : 'always', pageBreakAfter: 'always', padding: 0}}>
+                <div style={{...pageWrapStyle, pageBreakBefore: pi === 0 ? 'avoid' : 'always', pageBreakAfter: 'always'}}>
+                <div style={{...printGridStyle}}>
                   {pg.map((c, i) => (
                     <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
                       <Card c={c} />
@@ -376,9 +386,11 @@ export default function SimpleCardDesigner() {
                     </div>
                   ))}
                 </div>
+                </div>
  
                 {/* BACK PAGE — columns mirrored so each back lines up with its front */}
-                <div style={{...backGridStyle, pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto', padding: 0}}>
+                <div style={{...pageWrapStyle, pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto'}}>
+                <div style={{...backGridStyle}}>
                   {(() => {
                     // Build a fully-populated array of perPage slots (null = empty).
                     // For each card in the page, place it in the mirror-column position
@@ -404,6 +416,7 @@ export default function SimpleCardDesigner() {
                       </div>
                     ));
                   })()}
+                </div>
                 </div>
               </div>
             ));
