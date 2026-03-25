@@ -1,6 +1,9 @@
+Carddesigner fixed · JSX
+Copy
+
 import React, { useState } from 'react';
 import { Upload, Printer, Trash2, Check } from 'lucide-react';
-
+ 
 export default function SimpleCardDesigner() {
   const [suits, setSuits] = useState({ hearts: null, diamonds: null, clubs: null, spades: null });
   const [numbers, setNumbers] = useState({
@@ -22,24 +25,24 @@ export default function SimpleCardDesigner() {
   const [showCutLines, setShowCutLines] = useState(true);
   const [step, setStep] = useState('suits');
   const [showBacks, setShowBacks] = useState(false);
-
+ 
   const suitNames = ['hearts', 'diamonds', 'clubs', 'spades'];
   const numberVals = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
   const faceVals = ['J', 'Q', 'K'];
   const allVals = [...numberVals, ...faceVals];
-
+ 
   const cardW = cardSize === 'bridge' ? 57 : 63.5;
   const cardH = 87;
   const perRow = cardSize === 'bridge' ? 4 : 3;
   const perPage = 12; // 3 rows × 4 (bridge) or 4 rows × 3 (poker)
   const rowsPerPage = perPage / perRow;
-
+ 
   const upload = (setter, key) => (file) => {
     const r = new FileReader();
     r.onload = (e) => setter(prev => key ? {...prev, [key]: e.target.result} : e.target.result);
     r.readAsDataURL(file);
   };
-
+ 
   const allDone = {
     suits: Object.values(suits).every(s => s),
     numbers: Object.values(numbers).every(n => n),
@@ -47,7 +50,7 @@ export default function SimpleCardDesigner() {
     pictures: Object.values(pictureCards).every(p => p),
     back: !!cardBack
   };
-
+ 
   const pips = {
     'A': [[50,50]], '2': [[50,25],[50,75]], '3': [[50,25],[50,50],[50,75]],
     '4': [[30,30],[70,30],[30,70],[70,70]], '5': [[30,30],[70,30],[50,50],[30,70],[70,70]],
@@ -57,7 +60,7 @@ export default function SimpleCardDesigner() {
     '9': [[30,20],[70,20],[30,40],[70,40],[50,50],[30,60],[70,60],[30,80],[70,80]],
     '10': [[30,18],[70,18],[30,35],[70,35],[50,28],[50,72],[30,65],[70,65],[30,82],[70,82]]
   };
-
+ 
   const deck = () => {
     const d = [];
     suitNames.forEach(s => allVals.forEach(v => 
@@ -65,7 +68,7 @@ export default function SimpleCardDesigner() {
     ));
     return d;
   };
-
+ 
   const Corner = ({ v, s, rot }) => (
     <div className={`flex flex-col items-center ${rot ? 'rotate-180' : ''}`} style={{
       background: 'white', 
@@ -77,7 +80,7 @@ export default function SimpleCardDesigner() {
       <img src={suits[s]} alt={s} style={{width: '5mm', height: '5mm', objectFit: 'contain', marginTop: '1mm'}} />
     </div>
   );
-
+ 
   const Card = ({ c }) => (
     <div style={{position: 'relative', width: '100%', height: '100%', background: 'white', border: '1px solid #999', borderRadius: '3mm', overflow: 'hidden', boxSizing: 'border-box'}}>
       {cardStyle === 'picture' ? (
@@ -126,7 +129,7 @@ export default function SimpleCardDesigner() {
       )}
     </div>
   );
-
+ 
   const Marks = () => (
     <>
       {[
@@ -137,7 +140,7 @@ export default function SimpleCardDesigner() {
       ].map((s, i) => <div key={i} style={{position: 'absolute', background: '#999', ...s}} />)}
     </>
   );
-
+ 
   const UpBox = ({ img, onUp, label }) => (
     <div className="flex flex-col items-center">
       <label className="w-full cursor-pointer">
@@ -151,7 +154,7 @@ export default function SimpleCardDesigner() {
       {img && <button onClick={() => onUp(null)} className="mt-1 text-red-500 text-xs"><Trash2 className="w-3 h-3 inline" /> Remove</button>}
     </div>
   );
-
+ 
   // Shared grid style for both front and back print pages.
   // We rely solely on @page margins for positioning — no extra paddingTop here —
   // so fronts and backs sit at identical coordinates on their respective pages.
@@ -162,8 +165,8 @@ export default function SimpleCardDesigner() {
   // so that after flipping it aligns exactly with the front grid.
   const printableW = 297 - 25.4 * 2; // 246.2mm
   const gridW = perRow * cardW;
-  const backOffset = printableW - gridW; // bridge: 19.2mm, poker: 56.7mm
-
+  const backOffset = printableW - gridW; // bridge: 18.2mm, poker: 55.7mm
+ 
   const printGridStyle = {
     display: 'grid',
     gridTemplateColumns: `repeat(${perRow}, ${cardW}mm)`,
@@ -176,12 +179,12 @@ export default function SimpleCardDesigner() {
     overflow: 'hidden',
     marginTop: '10mm',
   };
-
+ 
   const backGridStyle = {
     ...printGridStyle,
     marginLeft: `${backOffset}mm`,
   };
-
+ 
   return (
     <>
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-8 print:hidden">
@@ -190,7 +193,7 @@ export default function SimpleCardDesigner() {
           <h1 className="text-4xl font-bold text-gray-800 mb-2">JdeM's Playing Card Design Tool</h1>
           <p className="text-gray-600">Design your deck of cards</p>
         </div>
-
+ 
         <div className="flex justify-center mb-8 gap-2 print:hidden">
           {['suits', 'numbers', cardStyle === 'playing' ? 'faces' : 'pictures', 'back', 'preview'].map((s, i) => (
             <button key={s} onClick={() => setStep(s)}
@@ -202,7 +205,7 @@ export default function SimpleCardDesigner() {
             </button>
           ))}
         </div>
-
+ 
         <div className="print:hidden">
           {step === 'suits' && (
             <div className="bg-white rounded-xl shadow-lg p-8">
@@ -224,7 +227,7 @@ export default function SimpleCardDesigner() {
               {allDone.suits && <div className="mt-8 text-center"><button onClick={() => setStep('numbers')} className="bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg">Next →</button></div>}
             </div>
           )}
-
+ 
           {step === 'numbers' && (
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h2 className="text-2xl font-bold mb-6">Step 2: Numbers & Letters</h2>
@@ -246,7 +249,7 @@ export default function SimpleCardDesigner() {
               {allDone.numbers && <div className="mt-8 text-center"><button onClick={() => setStep(cardStyle === 'playing' ? 'faces' : 'pictures')} className="bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg">Next →</button></div>}
             </div>
           )}
-
+ 
           {step === 'pictures' && (
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h2 className="text-2xl font-bold mb-6">Step 3: Picture Card Images</h2>
@@ -257,7 +260,7 @@ export default function SimpleCardDesigner() {
               {allDone.pictures && <div className="mt-8 text-center"><button onClick={() => setStep('back')} className="bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg">Next →</button></div>}
             </div>
           )}
-
+ 
           {step === 'faces' && (
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h2 className="text-2xl font-bold mb-6">Step 3: Face Cards</h2>
@@ -277,7 +280,7 @@ export default function SimpleCardDesigner() {
               {allDone.faces && <div className="mt-8 text-center"><button onClick={() => setStep('back')} className="bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg">Next →</button></div>}
             </div>
           )}
-
+ 
           {step === 'back' && (
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h2 className="text-2xl font-bold mb-6">Step 4: Card Back</h2>
@@ -287,7 +290,7 @@ export default function SimpleCardDesigner() {
               {allDone.back && <div className="mt-8 text-center"><button onClick={() => setStep('preview')} className="bg-purple-600 text-white font-semibold py-3 px-8 rounded-lg">Preview →</button></div>}
             </div>
           )}
-
+ 
           {step === 'preview' && (
             <div>
               <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
@@ -314,7 +317,7 @@ export default function SimpleCardDesigner() {
                   </div>
                 </div>
               </div>
-
+ 
               <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-2xl font-bold">Preview</h2>
@@ -334,13 +337,13 @@ export default function SimpleCardDesigner() {
                   ))}
                 </div>
               </div>
-
+ 
               <div className="text-center mb-6">
                 <button onClick={() => window.print()} className="bg-purple-600 text-white font-bold py-4 px-8 rounded-lg inline-flex items-center gap-2">
                   <Printer className="w-6 h-6" /> Print Deck (A3 Double-Sided)
                 </button>
               </div>
-
+ 
               <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-6">
                 <h3 className="font-bold text-lg mb-3">📋 Printing Instructions</h3>
                 <ol className="list-decimal ml-6 space-y-2 text-sm">
@@ -355,10 +358,10 @@ export default function SimpleCardDesigner() {
             </div>
           )}
         </div>
-
+ 
       </div>
     </div>
-
+ 
     {/* PRINT LAYOUT — outside all containers so no padding/margin affects positioning */}
     <div className="hidden print:block">
           {(() => {
@@ -366,9 +369,9 @@ export default function SimpleCardDesigner() {
             const pgs = [];
             for (let i = 0; i < d.length; i += perPage) pgs.push(d.slice(i, i + perPage));
             return pgs.map((pg, pi) => (
-              <div key={pi} style={{margin: 0, padding: 0}}>
+              <div key={pi} style={{padding: 0}}>
                 {/* FRONT PAGE */}
-                <div style={{...printGridStyle, pageBreakBefore: pi === 0 ? 'avoid' : 'always', pageBreakAfter: 'always', margin: 0, padding: 0}}>
+                <div style={{...printGridStyle, pageBreakBefore: pi === 0 ? 'avoid' : 'always', pageBreakAfter: 'always', padding: 0}}>
                   {pg.map((c, i) => (
                     <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
                       <Card c={c} />
@@ -376,7 +379,7 @@ export default function SimpleCardDesigner() {
                     </div>
                   ))}
                 </div>
-
+ 
                 {/* BACK PAGE — columns mirrored so each back lines up with its front */}
                 <div style={{...backGridStyle, pageBreakBefore: 'always', pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto', padding: 0}}>
                   {(() => {
@@ -409,15 +412,16 @@ export default function SimpleCardDesigner() {
             ));
           })()}
         </div>
-
+ 
         <style>{`
           @media print {
             body { margin: 0; padding: 0; }
             @page { margin: 25.4mm; size: A3 portrait; }
-            * { box-sizing: border-box !important; margin: 0; padding: 0; }
+            * { box-sizing: border-box !important; padding: 0; }
             .print-card-cell {
               overflow: hidden !important;
               flex-shrink: 0 !important;
+              margin: 0 !important;
             }
           }
         `}</style>
