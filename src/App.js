@@ -1,6 +1,3 @@
-Carddesigner fixed · JSX
-Copy
-
 import React, { useState } from 'react';
 import { Upload, Printer, Trash2, Check } from 'lucide-react';
  
@@ -370,71 +367,68 @@ export default function SimpleCardDesigner() {
  
     {/* PRINT LAYOUT — outside all containers so no padding/margin affects positioning */}
     <div className="hidden print:block">
-          {(() => {
-            const d = deck();
-            const pgs = [];
-            for (let i = 0; i < d.length; i += perPage) pgs.push(d.slice(i, i + perPage));
-            return pgs.map((pg, pi) => (
-              <div key={pi} style={{margin: 0, padding: 0}}>
-                {/* FRONT PAGE */}
-                <div style={{...pageWrapStyle, pageBreakBefore: pi === 0 ? 'avoid' : 'always', pageBreakAfter: 'always'}}>
-                <div style={{...printGridStyle}}>
-                  {pg.map((c, i) => (
-                    <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
-                      <Card c={c} />
-                      {showCutLines && <Marks />}
-                    </div>
-                  ))}
-                </div>
-                </div>
+      {(() => {
+        const d = deck();
+        const pgs = [];
+        for (let i = 0; i < d.length; i += perPage) pgs.push(d.slice(i, i + perPage));
+        return pgs.map((pg, pi) => (
+          <div key={pi}>
+            {/* FRONT PAGE */}
+            <div style={{...pageWrapStyle, pageBreakBefore: pi === 0 ? 'avoid' : 'always', pageBreakAfter: 'always'}}>
+              <div style={{...printGridStyle}}>
+                {pg.map((c, i) => (
+                  <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
+                    <Card c={c} />
+                    {showCutLines && <Marks />}
+                  </div>
+                ))}
+              </div>
+            </div>
  
-                {/* BACK PAGE — columns mirrored so each back lines up with its front */}
-                <div style={{...pageWrapStyle, pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto'}}>
-                <div style={{...backGridStyle}}>
-                  {(() => {
-                    // Build a fully-populated array of perPage slots (null = empty).
-                    // For each card in the page, place it in the mirror-column position
-                    // of its row so it aligns with the front when printed double-sided.
-                    const flipped = Array(perPage).fill(null);
-                    const rows = perPage / perRow;
-                    for (let row = 0; row < rows; row++) {
-                      for (let col = 0; col < perRow; col++) {
-                        const idx = row * perRow + col;
-                        if (idx < pg.length) {
-                          flipped[row * perRow + (perRow - 1 - col)] = pg[idx];
-                        }
+            {/* BACK PAGE — columns mirrored so each back lines up with its front */}
+            <div style={{...pageWrapStyle, pageBreakAfter: pi < pgs.length - 1 ? 'always' : 'auto'}}>
+              <div style={{...backGridStyle}}>
+                {(() => {
+                  const flipped = Array(perPage).fill(null);
+                  const rows = perPage / perRow;
+                  for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < perRow; col++) {
+                      const idx = row * perRow + col;
+                      if (idx < pg.length) {
+                        flipped[row * perRow + (perRow - 1 - col)] = pg[idx];
                       }
                     }
-                    return flipped.map((c, i) => (
-                      <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
-                        {c && (
-                          <div style={{width: '100%', height: '100%', background: 'white', border: '1px solid #999', borderRadius: '3mm', overflow: 'hidden', boxSizing: 'border-box'}}>
-                            <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
-                          </div>
-                        )}
-                        {c && showCutLines && <Marks />}
-                      </div>
-                    ));
-                  })()}
-                </div>
-                </div>
+                  }
+                  return flipped.map((c, i) => (
+                    <div key={i} className="print-card-cell" style={{width: `${cardW}mm`, height: `${cardH}mm`, position: 'relative', boxSizing: 'border-box'}}>
+                      {c && (
+                        <div style={{width: '100%', height: '100%', background: 'white', border: '1px solid #999', borderRadius: '3mm', overflow: 'hidden', boxSizing: 'border-box'}}>
+                          <img src={cardBack} alt="Back" style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                        </div>
+                      )}
+                      {c && showCutLines && <Marks />}
+                    </div>
+                  ));
+                })()}
               </div>
-            ));
-          })()}
-        </div>
+            </div>
+          </div>
+        ));
+      })()}
+    </div>
  
-        <style>{`
-          @media print {
-            body { margin: 0; padding: 0; }
-            @page { margin: 25.4mm; size: A3 portrait; }
-            * { box-sizing: border-box !important; padding: 0; }
-            .print-card-cell {
-              overflow: hidden !important;
-              flex-shrink: 0 !important;
-              margin: 0 !important;
-            }
-          }
-        `}</style>
+    <style>{`
+      @media print {
+        body { margin: 0; padding: 0; }
+        @page { margin: 25.4mm; size: A3 portrait; }
+        * { box-sizing: border-box !important; padding: 0; }
+        .print-card-cell {
+          overflow: hidden !important;
+          flex-shrink: 0 !important;
+          margin: 0 !important;
+        }
+      }
+    `}</style>
     </>
   );
 }
